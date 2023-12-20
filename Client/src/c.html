@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Client</title>
+</head>
+<body>
+
+<h1>Chat Client</h1>
+
+<label for="clientId">Enter your client ID:</label>
+<input type="text" id="clientId">
+<button onclick="connect()">Connect</button>
+
+<div>
+    <label for="receiverId">Receiver ID:</label>
+    <input type="text" id="receiverId">
+    <br>
+    <label for="message">Message:</label>
+    <input type="text" id="message">
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<div id="chatArea" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px; height: 200px; overflow-y: scroll;"></div>
+
+<script>
+    let clientId;
+    let socket;
+
+    function connect() {
+        clientId = document.getElementById('clientId').value;
+        socket = new WebSocket('ws://localhost:12345');
+
+        socket.onopen = function (event) {
+            console.log('WebSocket opened:', event);
+            // 发送客户端标识符给服务器
+            socket.send(clientId);
+        };
+
+        socket.onmessage = function (event) {
+            console.log('Received message:', event.data);
+            displayMessage(event.data);
+        };
+
+        socket.onclose = function (event) {
+            console.log('WebSocket closed:', event);
+        };
+
+        socket.onerror = function (event) {
+            console.error('WebSocket error:', event);
+        };
+    }
+
+    function sendMessage() {
+        const receiverId = document.getElementById('receiverId').value;
+        const message = document.getElementById('message').value;
+
+        // 发送消息格式：receiverId:messageContent
+        const fullMessage = receiverId + ':' + message;
+
+        // 发送消息给服务器
+        socket.send(fullMessage);
+
+        // 显示自己发送的消息
+        displayMessage(clientId + ': ' + message);
+    }
+
+    function displayMessage(message) {
+        const chatArea = document.getElementById('chatArea');
+        chatArea.innerHTML += message + '<br>';
+    }
+</script>
+
+</body>
+</html>
